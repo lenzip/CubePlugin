@@ -1,0 +1,9 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+PROJECT(GeoExample)
+
+FIND_PACKAGE(GGS REQUIRED)
+
+ADD_LIBRARY(GeoExample SHARED src/GeoExample.cpp)
+ADD_LIBRARY(cuboDetectorConstruction SHARED src/cuboDetectorConstruction.cpp)
+TARGET_LINK_LIBRARIES(GeoExample ${GGS_GEO_LIBRARIES})
+TARGET_LINK_LIBRARIES(cuboDetectorConstruction ${GGS_GEO_LIBRARIES})
