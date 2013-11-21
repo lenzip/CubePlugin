@@ -45,7 +45,7 @@ G4double cuboDetectorConstruction::RefractiveIndex_Air[9] =
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 cuboDetectorConstruction::cuboDetectorConstruction():_Physical_World(0),
-_sizeX(3.6*cm), _sizeY(3.6*cm), _sizeZ(3.6*cm),_detectorside(YPLUSSIDE) ,
+_sizeX(3.6*cm), _sizeY(3.6*cm), _sizeZ(3.6*cm),_detectorside(YPLUSSIDE) , _scintillationYield(54000),
 _Diode_Size_X(9.2*mm),
 _Diode_Size_Y(0.125*mm),
 _Diode_Size_Z(9.2*mm),
@@ -61,6 +61,7 @@ _Case_Size_Z(15.*mm)
   _messenger->DeclareProperty("sizeY", _sizeY, "Set the size of the cube in y.").SetUnit("cm");
   _messenger->DeclareProperty("sizeZ", _sizeZ, "Set the size of the cube in z.").SetUnit("cm");
   _messenger->DeclareProperty("detectorFace", _detectorside, "Set the face the light detector should be placed on");
+  _messenger->DeclareProperty("scintillationYield", _scintillationYield, "Number of photons per MeV");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -136,7 +137,7 @@ G4VPhysicalVolume* cuboDetectorConstruction::Construct()
 
   //csiMPT->AddConstProperty("SCINTILLATIONYIELD", 54000./MeV);
   //csiMPT->AddConstProperty("SCINTILLATIONYIELD", 0./MeV);
-  csiMPT->AddConstProperty("SCINTILLATIONYIELD", 100./MeV);
+  csiMPT->AddConstProperty("SCINTILLATIONYIELD", _scintillationYield/MeV);
   csiMPT->AddConstProperty("RESOLUTIONSCALE", 1);
   csiMPT->AddConstProperty("FASTTIMECONSTANT", 1000.*ns);
   csiMPT->AddConstProperty("YIELDRATIO", 1.);

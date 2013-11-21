@@ -33,7 +33,8 @@ class cuboDetectorConstruction : public GGSVGeometryConstruction
 
     G4VPhysicalVolume * _Physical_World;
     G4double _sizeX, _sizeY, _sizeZ;
-    G4int _detectorside; 
+    G4int _detectorside;
+    G4double _scintillationYield;
     G4double _Diode_Size_X;
     G4double _Diode_Size_Y;
     G4double _Diode_Size_Z;
