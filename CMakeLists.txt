@@ -4,4 +4,5 @@ PROJECT(GGSExamples)
 ADD_SUBDIRECTORY(geometry)
 ADD_SUBDIRECTORY(useraction)
 ADD_SUBDIRECTORY(scoring)
+ADD_SUBDIRECTORY(physicslist)
 
