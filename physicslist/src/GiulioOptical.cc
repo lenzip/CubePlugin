@@ -25,28 +25,35 @@ GiulioOptical::GiulioOptical():G4VModularPhysicsList(){
   this->SetVerboseLevel(1);  
    // EM Physics
   this->RegisterPhysics( new G4EmStandardPhysics());
+  this->ConstructParticle();
+
+  G4cout << "Particle Iterator " << theParticleIterator << G4endl;
+  G4cout << "Particle table " << theParticleTable << G4endl;
+
+
+
 
   // Synchroton Radiation & GN Physics
-  //this->RegisterPhysics( new G4EmExtraPhysics() );
+  this->RegisterPhysics( new G4EmExtraPhysics() );
 
   // Decays
-  //this->RegisterPhysics( new G4DecayPhysics() );
+  this->RegisterPhysics( new G4DecayPhysics() );
 
    // Hadron Elastic scattering
-  //this->RegisterPhysics( new G4HadronElasticPhysics() );
+  this->RegisterPhysics( new G4HadronElasticPhysics() );
 
    // Hadron Physics
-  //this->RegisterPhysics(  new HadronPhysicsFTFP_BERT());
+  this->RegisterPhysics(  new HadronPhysicsFTFP_BERT());
 
   // Stopping Physics
-  //this->RegisterPhysics( new G4StoppingPhysics() );
+  this->RegisterPhysics( new G4StoppingPhysics() );
 
   // Ion Physics
-  //this->RegisterPhysics( new G4IonPhysics());
+  this->RegisterPhysics( new G4IonPhysics());
 
   // Neutron tracking cut
-  //this->RegisterPhysics( new G4NeutronTrackingCut());
-/*  
+  this->RegisterPhysics( new G4NeutronTrackingCut());
+  
   opticalPhysics = new G4OpticalPhysics();
 
   opticalPhysics->SetWLSTimeProfile("delta");
@@ -67,13 +74,15 @@ GiulioOptical::GiulioOptical():G4VModularPhysicsList(){
     G4cout << "Registered " << this->GetPhysics(iphys)->GetPhysicsName() << G4endl;
     iphys++;
   }
-*/
+
 }
 
 void GiulioOptical::SetCuts()
 {
   
   this->SetCutsWithDefault();
-  
+   G4cout << "Particle Iterator in setcuts " << theParticleIterator << G4endl;
+     G4cout << "Particle table in setcuts " << theParticleTable << G4endl;
+
 }
 
