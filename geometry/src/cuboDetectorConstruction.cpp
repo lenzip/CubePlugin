@@ -240,11 +240,11 @@ G4VPhysicalVolume* cuboDetectorConstruction::Construct()
 
 //	------------- Surfaces --------------
 //
-/*
+
   // CsI - Air Surface
   G4OpticalSurface * Op_CsI_Surface = new G4OpticalSurface("CsI_Surface");
   Op_CsI_Surface->SetType(dielectric_dielectric);
-  Op_CsI_Surface->SetFinish(ground);
+  Op_CsI_Surface->SetFinish(polishedfrontpainted);
   Op_CsI_Surface->SetModel(unified);
   Op_CsI_Surface->SetPolish(1.);
   Op_CsI_Surface->SetSigmaAlpha(0.);
@@ -282,7 +282,7 @@ G4VPhysicalVolume* cuboDetectorConstruction::Construct()
   Op_CsI_Surface->SetMaterialPropertiesTable(csiSPT);
 
   // CsI - Air Surface (Diode Side)
-
+/*
   G4OpticalSurface * Op_CsI_Surface_DSide = new G4OpticalSurface("CsI_Surface_DSide");
   Op_CsI_Surface_DSide->SetType(dielectric_dielectric);
   Op_CsI_Surface_DSide->SetFinish(ground);
@@ -325,12 +325,12 @@ G4VPhysicalVolume* cuboDetectorConstruction::Construct()
   csiSPT_DSide->AddProperty("RINDEX", Ephoton_DSide, backpaint_DSide, num_DSide);
 
   Op_CsI_Surface_DSide->SetMaterialPropertiesTable(csiSPT_DSide);
-
+*/
   // CsI - Resin Surface
   G4OpticalSurface * Op_Resin_Surface = new G4OpticalSurface("Resin_Surface");
   Op_Resin_Surface->SetType(dielectric_dielectric);
   Op_Resin_Surface->SetFinish(polished);
-  Op_Resin_Surface->SetModel(glisur);
+  Op_Resin_Surface->SetModel(unified);
   Op_Resin_Surface->SetSigmaAlpha(0.);
   Op_Resin_Surface->SetPolish(1.);
 
@@ -399,7 +399,6 @@ G4VPhysicalVolume* cuboDetectorConstruction::Construct()
 			Efficiency_Diode,   num_Diode);
 
   Op_Diode_Surface->SetMaterialPropertiesTable(diodeSPT);
-*/
 
 //always return the physical World
   return _Physical_World;
@@ -496,7 +495,7 @@ G4LogicalVolume* cuboDetectorConstruction::buildPD(){
   G4LogicalVolume * _Logic_Diode  = new G4LogicalVolume(_Solid_Diode,
                                       SiliconMaterial,
                                       "Photodiode");
-  G4PVPlacement * _Physical_Diode =
+  _Physical_Diode =
     new G4PVPlacement(0, G4ThreeVector(0.,
                                        - (_Case_Size_Y - _Diode_Size_Y) / 2.,
                                        0.
@@ -510,7 +509,7 @@ G4LogicalVolume* cuboDetectorConstruction::buildPD(){
   G4LogicalVolume * _Logic_Resin  = new G4LogicalVolume(_Solid_Resin,
                                       ResinMaterial,
                                       "Optical_Resin");
-  G4PVPlacement * _Physical_Resin =
+  _Physical_Resin =
       new G4PVPlacement(0, G4ThreeVector(0.,
                                        - (_Resin_Size_Y) / 2.,
                                        0.

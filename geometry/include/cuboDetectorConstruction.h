@@ -45,6 +45,9 @@ class cuboDetectorConstruction : public GGSVGeometryConstruction
     G4double _Case_Size_Y;
     G4double _Case_Size_Z;
 
+    G4PVPlacement * _Physical_Diode ;
+    G4PVPlacement * _Physical_Resin ;
+
     static G4double PhotonEnergy[];
     static G4double PhotonEnergy_2[];
 
