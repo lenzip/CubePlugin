@@ -45,13 +45,13 @@ G4double cuboDetectorConstruction::RefractiveIndex_Air[9] =
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 cuboDetectorConstruction::cuboDetectorConstruction():_Physical_World(0),
-_sizeX(3.6*cm), _sizeY(3.6*cm), _sizeZ(3.6*cm),_detectorside(YPLUSSIDE) , _scintillationYield(54000),
+_sizeX(3.6*cm), _sizeY(3.6*cm), _sizeZ(3.6*cm),_detectorside(YPLUSSIDE) , _scintillationYield(0),
 _Diode_Size_X(9.2*mm),
 _Diode_Size_Y(0.125*mm),
 _Diode_Size_Z(9.2*mm),
-_Resin_Size_X(9.2*mm),
-_Resin_Size_Y(0.1*mm),
-_Resin_Size_Z(9.2*mm),
+_Resin_Size_X(10*mm),
+_Resin_Size_Y(1*mm),
+_Resin_Size_Z(10*mm),
 _Case_Size_X(15.*mm),
 _Case_Size_Y(2.*mm),
 _Case_Size_Z(15.*mm)
@@ -240,6 +240,44 @@ G4VPhysicalVolume* cuboDetectorConstruction::Construct()
 
 //	------------- Surfaces --------------
 //
+    
+    // CsI - Resin Surface
+  G4OpticalSurface * Op_Resin_Surface = new G4OpticalSurface("Resin_Surface");
+  Op_Resin_Surface->SetType(dielectric_dielectric);
+  Op_Resin_Surface->SetFinish(polished);
+  Op_Resin_Surface->SetModel(unified);
+  Op_Resin_Surface->SetSigmaAlpha(0.);
+  Op_Resin_Surface->SetPolish(1.);
+  G4LogicalBorderSurface * CsI_Res_Surf = 
+    new G4LogicalBorderSurface("CsI_to_Resin", _Physical_Cube, 
+  			       _Physical_Resin, Op_Resin_Surface);
+/*
+  G4LogicalBorderSurface * Res_CsI_Surf = 
+     new G4LogicalBorderSurface("Resin_to_CsI", _Physical_Resin, 
+   			       _Physical_Cube, Op_Resin_Surface);
+*/
+  const G4int num = 2;
+  G4double Ephoton[num] = {1.65*eV, 3.87*eV};
+
+  G4double Reflectivity_Resin[num] = {1., 1.};
+  G4double Efficiency_Resin[num]   = {1., 1.};
+
+  G4double specularlobe_Resin[num] = {1., 1.};
+  G4double specularspike_Resin[num] = {0., 0.};
+  G4double backscatter_Resin[num] = {0., 0.};
+
+  G4MaterialPropertiesTable *resinSPT = new G4MaterialPropertiesTable();
+
+  resinSPT->AddProperty("REFLECTIVITY", Ephoton, Reflectivity_Resin, num);
+  resinSPT->AddProperty("EFFICIENCY",   Ephoton, Efficiency_Resin,   num);
+  resinSPT->AddProperty("SPECULARLOBECONSTANT",
+  			Ephoton, specularlobe_Resin, num);
+  resinSPT->AddProperty("SPECULARSPIKECONSTANT",
+  			Ephoton, specularspike_Resin, num);
+  resinSPT->AddProperty("BACKSCATTERCONSTANT", 
+  			Ephoton, backscatter_Resin, num);
+
+  Op_Resin_Surface->SetMaterialPropertiesTable(resinSPT);
 
   // CsI - Air Surface
   G4OpticalSurface * Op_CsI_Surface = new G4OpticalSurface("CsI_Surface");
@@ -257,14 +295,12 @@ G4VPhysicalVolume* cuboDetectorConstruction::Construct()
     new G4LogicalBorderSurface("CsI_Surface2", _Physical_World, _Physical_Cube,
 			       Op_CsI_Surface);
 
-  const G4int num = 2;
-  G4double Ephoton[num] = {1.65*eV, 3.87*eV};
 
   G4double Reflectivity[num] = {0., 0.};
-  G4double Efficiency[num]   = {1., 1.};
+  G4double Efficiency[num]   = {0., 0.};
   G4double cubeReflectivity = 1.;
 
-  G4double specularlobe[num] = {1., 1.};
+  G4double specularlobe[num] = {0., 0.};
   G4double specularspike[num] = {0., 0.};
   G4double backscatter[num] = {0., 0.};
 
@@ -326,43 +362,7 @@ G4VPhysicalVolume* cuboDetectorConstruction::Construct()
 
   Op_CsI_Surface_DSide->SetMaterialPropertiesTable(csiSPT_DSide);
 */
-  // CsI - Resin Surface
-  G4OpticalSurface * Op_Resin_Surface = new G4OpticalSurface("Resin_Surface");
-  Op_Resin_Surface->SetType(dielectric_dielectric);
-  Op_Resin_Surface->SetFinish(polished);
-  Op_Resin_Surface->SetModel(unified);
-  Op_Resin_Surface->SetSigmaAlpha(0.);
-  Op_Resin_Surface->SetPolish(1.);
-
-  G4LogicalBorderSurface * CsI_Res_Surf = 
-    new G4LogicalBorderSurface("CsI_to_Resin", _Physical_Cube, 
-  			       _Physical_Resin, Op_Resin_Surface);
-
-  G4LogicalBorderSurface * Res_CsI_Surf = 
-     new G4LogicalBorderSurface("Resin_to_CsI", _Physical_Resin, 
-   			       _Physical_Cube, Op_Resin_Surface);
-
-  G4double Reflectivity_Resin[num] = {1., 1.};
-  G4double Efficiency_Resin[num]   = {0., 0.};
-
-  G4double specularlobe_Resin[num] = {1., 1.};
-  G4double specularspike_Resin[num] = {0., 0.};
-  G4double backscatter_Resin[num] = {0., 0.};
-
-  G4MaterialPropertiesTable *resinSPT = new G4MaterialPropertiesTable();
-
-  resinSPT->AddProperty("REFLECTIVITY", Ephoton, Reflectivity_Resin, num);
-  resinSPT->AddProperty("EFFICIENCY",   Ephoton, Efficiency_Resin,   num);
-  resinSPT->AddProperty("SPECULARLOBECONSTANT",
-  			Ephoton, specularlobe_Resin, num);
-  resinSPT->AddProperty("SPECULARSPIKECONSTANT",
-  			Ephoton, specularspike_Resin, num);
-  resinSPT->AddProperty("BACKSCATTERCONSTANT", 
-  			Ephoton, backscatter_Resin, num);
-
-  Op_Resin_Surface->SetMaterialPropertiesTable(resinSPT);
-
-
+  
   // Resin - Photodiode Surface
   G4OpticalSurface * Op_Diode_Surface = new G4OpticalSurface("Diode_Surface");
   Op_Diode_Surface->SetType(dielectric_metal);
@@ -511,7 +511,7 @@ G4LogicalVolume* cuboDetectorConstruction::buildPD(){
                                       "Optical_Resin");
   _Physical_Resin =
       new G4PVPlacement(0, G4ThreeVector(0.,
-                                       - (_Resin_Size_Y) / 2.,
+                                       - (_Case_Size_Y + _Resin_Size_Y) / 2.,
                                        0.
                                        ),
                       _Logic_Resin , "Photodiode", _Logic_Case, false, 0);
