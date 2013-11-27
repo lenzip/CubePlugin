@@ -7,6 +7,7 @@
 #include "G4Box.hh"
 #include "G4OpticalSurface.hh"
 #include "G4LogicalBorderSurface.hh"
+#include "G4LogicalSkinSurface.hh"
 #include "G4GenericMessenger.hh"
 #include "G4UImanager.hh"
 #include "G4RotationMatrix.hh"
@@ -196,7 +197,7 @@ G4VPhysicalVolume* cuboDetectorConstruction::Construct()
   if (_detectorside==YPLUSSIDE){
     rotation = 0;
     pdposx=0.;
-    pdposy=_sizeY/2. + _Resin_Size_Y + _Case_Size_Y/2.;
+    pdposy=_sizeY/2. + _Resin_Size_Y/2.;
     pdposz=0.;
   } else if (_detectorside==YMINUSSIDE){
     rotation = new G4RotationMatrix(M_PI, 0, 0);
@@ -235,7 +236,8 @@ G4VPhysicalVolume* cuboDetectorConstruction::Construct()
                                       //_sizeY/2. + _Resin_Size_Y + _Case_Size_Y/2.,
                                       pdposy,
                                       pdposz),
-                                      pd, "PD", _Logic_Cube, false, 0);
+                                      pd, "PD", _Logic_Cube, false, 0, true);
+                                      //pd, "PD", _Logic_World, false, 0);
 
 
 //	------------- Surfaces --------------
@@ -251,11 +253,11 @@ G4VPhysicalVolume* cuboDetectorConstruction::Construct()
   G4LogicalBorderSurface * CsI_Res_Surf = 
     new G4LogicalBorderSurface("CsI_to_Resin", _Physical_Cube, 
   			       _Physical_Resin, Op_Resin_Surface);
-/*
+
   G4LogicalBorderSurface * Res_CsI_Surf = 
      new G4LogicalBorderSurface("Resin_to_CsI", _Physical_Resin, 
    			       _Physical_Cube, Op_Resin_Surface);
-*/
+
   const G4int num = 2;
   G4double Ephoton[num] = {1.65*eV, 3.87*eV};
 
@@ -295,6 +297,7 @@ G4VPhysicalVolume* cuboDetectorConstruction::Construct()
     new G4LogicalBorderSurface("CsI_Surface2", _Physical_World, _Physical_Cube,
 			       Op_CsI_Surface);
 
+  //G4LogicalSkinSurface * CsI_Surf = new G4LogicalSkinSurface("CsI_Surf",_Logic_Cube, Op_CsI_Surface);
 
   G4double Reflectivity[num] = {0., 0.};
   G4double Efficiency[num]   = {0., 0.};
@@ -373,11 +376,11 @@ G4VPhysicalVolume* cuboDetectorConstruction::Construct()
   G4LogicalBorderSurface * Res_Dio_Surf = 
     new G4LogicalBorderSurface("Resin_to_Diode", _Physical_Resin, 
 			       _Physical_Diode, Op_Diode_Surface);
- 
+/* 
   G4LogicalBorderSurface * Dio_Res_Surf =
     new G4LogicalBorderSurface("Diode_to_Resin", _Physical_Diode,
                                _Physical_Resin, Op_Diode_Surface);
-                              
+*/                              
 
   const G4int num_Diode = 9;
   G4double Ephoton_Diode[num_Diode] =
@@ -436,7 +439,7 @@ G4LogicalVolume* cuboDetectorConstruction::buildPD(){
 
 // Ceramic
 //
-  G4Material * CeramicMaterial = new G4Material("ResinMaterial", z=6, a=12*g/mole,
+  G4Material * CeramicMaterial = new G4Material("CeramicMaterial", z=6, a=12*g/mole,
                                              density=2*g/cm3);
 
 // Optical Properties
@@ -471,13 +474,18 @@ G4LogicalVolume* cuboDetectorConstruction::buildPD(){
     };
 
   G4MaterialPropertiesTable * SiMPT = new G4MaterialPropertiesTable();
-  SiMPT->AddProperty("RINDEX", PhotonEnergy, RefractiveIndex_Si, 9)
-       ->SetSpline(true);
+  //SiMPT->AddProperty("RINDEX", PhotonEnergy, RefractiveIndex_Si, 9)
+  //     ->SetSpline(true);
   SiMPT->AddProperty("ABSLENGTH", PhotonEnergy, Absorption_Si, 9);
 
   SiliconMaterial->SetMaterialPropertiesTable(SiMPT);
 
+  G4Box * _Solid_Resin = new G4Box("Optical_Resin", _Resin_Size_X / 2.,
+                           _Resin_Size_Y / 2., _Resin_Size_Z / 2.);
 
+  _Logic_Resin  = new G4LogicalVolume(_Solid_Resin,
+                                      ResinMaterial,
+                                      "Optical_Resin");
 
 // Photodiode case
 //
@@ -487,6 +495,7 @@ G4LogicalVolume* cuboDetectorConstruction::buildPD(){
   G4LogicalVolume * _Logic_Case  = new G4LogicalVolume(_Solid_Case,
                                      CeramicMaterial,
                                      "Photodiode_case");
+                                     
   // The Photodiode
   //
   G4Box * _Solid_Diode = new G4Box("Photodiode", _Diode_Size_X / 2.,
@@ -497,26 +506,19 @@ G4LogicalVolume* cuboDetectorConstruction::buildPD(){
                                       "Photodiode");
   _Physical_Diode =
     new G4PVPlacement(0, G4ThreeVector(0.,
-                                       - (_Case_Size_Y - _Diode_Size_Y) / 2.,
+                                       (_Diode_Size_Y+_Resin_Size_Y) / 2.-0.01*mm,
                                        0.
                                        ),
-                      _Logic_Diode , "Photodiode", _Logic_Case, false, 0);
-  // Optical Resin
+                      _Logic_Diode , "Photodiode", _Logic_Resin, false, 0);
 
-  G4Box * _Solid_Resin = new G4Box("Optical_Resin", _Resin_Size_X / 2.,
-                           _Resin_Size_Y / 2., _Resin_Size_Z / 2.);
+    
+  /*G4PVPlacement* _Physical_Case = new G4PVPlacement(0, G4ThreeVector(0., (_Case_Size_Y+_Resin_Size_Y)/2., 0),
+                                                    _Logic_Case, "PDCase", _Logic_Resin, false, 0, true);
+  */
+  G4PVPlacement* _Physical_Case = new G4PVPlacement(0, G4ThreeVector(0., _Case_Size_Y/2.-_Diode_Size_Y/2., 0),
+                                                      _Logic_Case, "PDCase", _Logic_Diode, false, 0, true);
 
-  G4LogicalVolume * _Logic_Resin  = new G4LogicalVolume(_Solid_Resin,
-                                      ResinMaterial,
-                                      "Optical_Resin");
-  _Physical_Resin =
-      new G4PVPlacement(0, G4ThreeVector(0.,
-                                       - (_Case_Size_Y + _Resin_Size_Y) / 2.,
-                                       0.
-                                       ),
-                      _Logic_Resin , "Photodiode", _Logic_Case, false, 0);
-
-  return _Logic_Case;
+  return _Logic_Resin;
 
 
 }
