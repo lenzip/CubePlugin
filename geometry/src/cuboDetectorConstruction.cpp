@@ -197,7 +197,7 @@ G4VPhysicalVolume* cuboDetectorConstruction::Construct()
   if (_detectorside==YPLUSSIDE){
     rotation = 0;
     pdposx=0.;
-    pdposy=_sizeY/2. + _Resin_Size_Y/2.;
+    pdposy=_sizeY/2. + _Diode_Size_Y/2.;
     pdposz=0.;
   } else if (_detectorside==YMINUSSIDE){
     rotation = new G4RotationMatrix(M_PI, 0, 0);
@@ -376,11 +376,11 @@ G4VPhysicalVolume* cuboDetectorConstruction::Construct()
   G4LogicalBorderSurface * Res_Dio_Surf = 
     new G4LogicalBorderSurface("Resin_to_Diode", _Physical_Resin, 
 			       _Physical_Diode, Op_Diode_Surface);
-/* 
+ 
   G4LogicalBorderSurface * Dio_Res_Surf =
     new G4LogicalBorderSurface("Diode_to_Resin", _Physical_Diode,
                                _Physical_Resin, Op_Diode_Surface);
-*/                              
+                             
 
   const G4int num_Diode = 9;
   G4double Ephoton_Diode[num_Diode] =
@@ -474,8 +474,8 @@ G4LogicalVolume* cuboDetectorConstruction::buildPD(){
     };
 
   G4MaterialPropertiesTable * SiMPT = new G4MaterialPropertiesTable();
-  //SiMPT->AddProperty("RINDEX", PhotonEnergy, RefractiveIndex_Si, 9)
-  //     ->SetSpline(true);
+  SiMPT->AddProperty("RINDEX", PhotonEnergy, RefractiveIndex_Si, 9)
+       ->SetSpline(true);
   SiMPT->AddProperty("ABSLENGTH", PhotonEnergy, Absorption_Si, 9);
 
   SiliconMaterial->SetMaterialPropertiesTable(SiMPT);
@@ -504,21 +504,22 @@ G4LogicalVolume* cuboDetectorConstruction::buildPD(){
   G4LogicalVolume * _Logic_Diode  = new G4LogicalVolume(_Solid_Diode,
                                       SiliconMaterial,
                                       "Photodiode");
+  /*                                    
   _Physical_Diode =
     new G4PVPlacement(0, G4ThreeVector(0.,
-                                       (_Diode_Size_Y+_Resin_Size_Y) / 2.-0.01*mm,
+                                       (_Diode_Size_Y+_Resin_Size_Y) / 2.,
                                        0.
                                        ),
-                      _Logic_Diode , "Photodiode", _Logic_Resin, false, 0);
-
+                      _Logic_Diode , "Photodiode", _Logic_Resin, false, 0, true);
+  */
     
   /*G4PVPlacement* _Physical_Case = new G4PVPlacement(0, G4ThreeVector(0., (_Case_Size_Y+_Resin_Size_Y)/2., 0),
                                                     _Logic_Case, "PDCase", _Logic_Resin, false, 0, true);
   */
-  G4PVPlacement* _Physical_Case = new G4PVPlacement(0, G4ThreeVector(0., _Case_Size_Y/2.-_Diode_Size_Y/2., 0),
-                                                      _Logic_Case, "PDCase", _Logic_Diode, false, 0, true);
+  //G4PVPlacement* _Physical_Case = new G4PVPlacement(0, G4ThreeVector(0., _Case_Size_Y/2.-_Diode_Size_Y/2., 0),
+  //                                                    _Logic_Case, "PDCase", _Logic_Diode, false, 0, true);
 
-  return _Logic_Resin;
+  return _Logic_Diode;
 
 
 }
