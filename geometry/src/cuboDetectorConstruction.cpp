@@ -390,9 +390,13 @@ G4VPhysicalVolume* cuboDetectorConstruction::Construct()
   //   400*nm,  320*nm }
   G4double Reflectivity_Diode[num_Diode] = 
     {0., 0., 0., 0., 0., 0., 0., 0., 0.};
-  G4double Efficiency_Diode[num_Diode] = 
+  G4double Efficiency_Diode[num_Diode] =
+    /*
     {   0.794,   0.788,   0.763,   0.723,   0.721,   0.670,   0.634, 
 	0.558,   0.388};
+    */
+    {   0.,   0.,   0.,   0.,   0.,   0.,   0.634, 
+        0.558,   0.388};
 
   G4MaterialPropertiesTable * diodeSPT = new G4MaterialPropertiesTable();
 
