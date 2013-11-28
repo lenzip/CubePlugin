@@ -14,7 +14,7 @@
 
 GeometryPlugin(cuboDetectorConstruction);
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-cuboDetectorConstruction::cuboDetectorConstruction()
+cuboDetectorConstruction::cuboDetectorConstruction():_scintillationYield(0.)
 {
  _messenger = new G4GenericMessenger(this, "/GGS/geometry/cuboDetectorConstruction/");
  _messenger->DeclareProperty("scintillationYield", _scintillationYield, "Number of photons per MeV");
@@ -146,7 +146,7 @@ G4VPhysicalVolume* cuboDetectorConstruction::Construct()
 
   //csiMPT->AddConstProperty("SCINTILLATIONYIELD", 54000./MeV);
   //csiMPT->AddConstProperty("SCINTILLATIONYIELD", 0./MeV);
-  csiMPT->AddConstProperty("SCINTILLATIONYIELD", 54./MeV);
+  csiMPT->AddConstProperty("SCINTILLATIONYIELD", _scintillationYield/MeV);
   csiMPT->AddConstProperty("RESOLUTIONSCALE", 1);
   csiMPT->AddConstProperty("FASTTIMECONSTANT", 1000.*ns);
   csiMPT->AddConstProperty("YIELDRATIO", 1.);
