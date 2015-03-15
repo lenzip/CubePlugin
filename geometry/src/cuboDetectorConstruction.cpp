@@ -5,6 +5,7 @@
 #include "G4NistManager.hh"
 #include "G4Transform3D.hh"
 #include "G4Box.hh"
+#include "G4EllipticalTube.hh"
 #include "G4OpticalSurface.hh"
 #include "G4LogicalBorderSurface.hh"
 #include "G4LogicalSkinSurface.hh"
@@ -16,6 +17,17 @@
 #include "geometry/pluginmanagers/GGSGeoPluginMacros.h"
 
 GeometryPlugin(cuboDetectorConstruction);
+
+G4double* wavelenghToEnergy(const G4double* wavelenghts, G4int n){
+  G4double* energies = new G4double[n];
+  G4cout << m << G4endl;
+  const G4double hc = 1239.80*MeV*1e-15*m;
+  for (G4int i = 0; i < n; ++i){
+    *(energies+i) = (hc / *(wavelenghts+i));
+    G4cout << "i: " << i <<" lambda: " << wavelenghts[i]/nm << " with energy: " << *(energies+i)/eV << G4endl;
+  }
+  return energies;
+}
 
 G4double cuboDetectorConstruction::PhotonEnergy[9] =
     { 1.65*eV, 1.77*eV, 1.91*eV, 2.07*eV, 2.25*eV, 2.48*eV, 2.76*eV, 3.10*eV,
@@ -55,12 +67,18 @@ _Resin_Size_Y(1*mm),
 _Resin_Size_Z(10*mm),
 _Case_Size_X(15.*mm),
 _Case_Size_Y(2.*mm),
-_Case_Size_Z(15.*mm)
+_Case_Size_Z(15.*mm),
+_nSensors(1),
+_diameter(0.8*cm),
+_squareOrRound(SQUARE)
 {
   _messenger = new G4GenericMessenger(this, "/GGS/geometry/cuboDetectorConstruction/");
   _messenger->DeclareProperty("sizeX", _sizeX, "Set the size of the cube in x.").SetUnit("cm");
   _messenger->DeclareProperty("sizeY", _sizeY, "Set the size of the cube in y.").SetUnit("cm");
   _messenger->DeclareProperty("sizeZ", _sizeZ, "Set the size of the cube in z.").SetUnit("cm");
+  _messenger->DeclareProperty("diameter", _diameter, "Set the diameter of the round PMT.").SetUnit("cm");
+  _messenger->DeclareProperty("squareOrRound", _squareOrRound, "Set whether the PMT is square or round");
+  _messenger->DeclareProperty("nSensors", _nSensors, "set the number of sensors");
   _messenger->DeclareProperty("detectorFace", _detectorside, "Set the face the light detector should be placed on");
   _messenger->DeclareProperty("scintillationYield", _scintillationYield, "Number of photons per MeV");
 }
@@ -76,7 +94,9 @@ cuboDetectorConstruction::~cuboDetectorConstruction()
 G4VPhysicalVolume* cuboDetectorConstruction::Construct()
 {
 
+  G4UImanager::GetUIpointer()->ApplyCommand(G4String("/control/execute geo.in"));
   if (_geoDataCard != "") {
+    G4cout << "#################################################################applying geo datacard" << G4endl;
     G4UImanager::GetUIpointer()->ApplyCommand(G4String("/control/execute " + _geoDataCard));
   }
   // Delete the messenger so that the commands for configuring the geometry won't be available anymore
@@ -188,58 +208,70 @@ G4VPhysicalVolume* cuboDetectorConstruction::Construct()
 				      ),
 		      _Logic_Cube , "CsI_Cube", _Logic_World, false, 0);
  
-  G4LogicalVolume* pd = buildPD();
+  G4LogicalVolume* pd = 0;
+  if (_squareOrRound == SQUARE) 
+    pd = buildSquarePD();
+  else 
+    pd = buildRoundPD();
 
-  G4RotationMatrix* rotation = 0;
-  G4double pdposx=0.;
-  G4double pdposy=0.;
-  G4double pdposz=0.;
-  if (_detectorside==YPLUSSIDE){
-    rotation = 0;
-    pdposx=0.;
-    pdposy=_sizeY/2. + _Resin_Size_Y/2.;
-    pdposz=0.;
-  } else if (_detectorside==YMINUSSIDE){
-    rotation = new G4RotationMatrix(M_PI, 0, 0);
-    pdposx=0.;
-    pdposy=-(_sizeY/2. + _Resin_Size_Y + _Case_Size_Y/2.);
-    pdposz=0.;
-  } else if (_detectorside==XPLUSSIDE){
-    pdposx=_sizeX/2. + _Resin_Size_Y + _Case_Size_Y/2.;
-    pdposy=0.;
-    pdposz=0.;
-    rotation = new G4RotationMatrix(0, M_PI/2, -M_PI/2);
-  } else if (_detectorside==XMINUSSIDE){
-    pdposx=-(_sizeX/2. + _Resin_Size_Y + _Case_Size_Y/2.);
-    pdposy=0.;
-    pdposz=0.;
-    rotation = new G4RotationMatrix(0, -M_PI/2, M_PI/2);
-  } else if (_detectorside==ZPLUSSIDE){
-    pdposx=0.;
-    pdposy=0.;
-    pdposz=_sizeZ/2. + _Resin_Size_Y + _Case_Size_Y/2.;
-    rotation = new G4RotationMatrix(0, -M_PI/2, M_PI);
-  } else {
-    pdposx=0.;
-    pdposy=0.;
-    pdposz=-(_sizeZ/2. + _Resin_Size_Y + _Case_Size_Y/2.);
-    rotation = new G4RotationMatrix(0, M_PI/2, M_PI);
-  }
-
-
-
-
-
-
-  G4PVPlacement * _Physical_Photo_Diode = 
-    new G4PVPlacement(rotation,G4ThreeVector(pdposx,
+  for (int i = 0; i < _nSensors; ++i){
+    G4RotationMatrix* rotation = 0;
+    G4double pdposx=0.;
+    G4double pdposy=0.;
+    G4double pdposz=0.;
+    int detectorside = _detectorside + i;
+    if (detectorside==YPLUSSIDE){
+      rotation = 0;
+      if (_squareOrRound == ROUND)
+        rotation = new G4RotationMatrix(0, -M_PI/2, 0);
+      pdposx=0.;
+      pdposy=_sizeY/2. + _Resin_Size_Y/2.;
+      pdposz=0.;
+    } else if (detectorside==YMINUSSIDE){
+      if (_squareOrRound == SQUARE)
+        rotation = new G4RotationMatrix(M_PI, 0, 0);
+      else
+        rotation = new G4RotationMatrix(M_PI, -M_PI/2, 0);
+      pdposx=0.;
+      pdposy=-(_sizeY/2. + _Resin_Size_Y/2.);
+      pdposz=0.;
+    } else if (detectorside==XPLUSSIDE){
+      pdposx=_sizeX/2. + _Resin_Size_Y/2 ;//+ (_Resin_Size_Y + _Case_Size_Y)/2.;
+      pdposy=0.;
+      pdposz=0.;
+      if (_squareOrRound == SQUARE)
+        rotation = new G4RotationMatrix(0, M_PI/2, -M_PI/2);
+      else 
+        rotation = new G4RotationMatrix(M_PI/2, M_PI/2, 0. );
+    } else if (detectorside==XMINUSSIDE){
+      pdposx=-(_sizeX/2. + _Resin_Size_Y/2.);
+      pdposy=0.;
+      pdposz=0.;
+      if (_squareOrRound == SQUARE)
+        rotation = new G4RotationMatrix(0, -M_PI/2, M_PI/2);
+      else
+        rotation = new G4RotationMatrix(M_PI/2, -M_PI/2, 0. );
+    } else if (detectorside==ZPLUSSIDE){
+      pdposx=0.;
+      pdposy=0.;
+      pdposz=_sizeZ/2. + _Resin_Size_Y + _Case_Size_Y/2.;
+      rotation = new G4RotationMatrix(0, -M_PI/2, M_PI);
+    } else {
+      pdposx=0.;
+      pdposy=0.;
+      pdposz=-(_sizeZ/2. + _Resin_Size_Y + _Case_Size_Y/2.);
+      rotation = new G4RotationMatrix(0, M_PI/2, M_PI);
+    }
+  
+    G4PVPlacement * _Physical_Photo_Diode = 
+      new G4PVPlacement(rotation,G4ThreeVector(pdposx,
                                       //_sizeY/2. + _Resin_Size_Y + _Case_Size_Y/2.,
                                       pdposy,
                                       pdposz),
                                       pd, "PD", _Logic_Cube, false, 0, true);
                                       //pd, "PD", _Logic_World, false, 0);
 
-
+  }
 //	------------- Surfaces --------------
 //
     
@@ -423,7 +455,7 @@ void cuboDetectorConstruction::SetReflectivity(G4double ref,
   cubeReflectivity = ref;
 }
 
-G4LogicalVolume* cuboDetectorConstruction::buildPD(){
+G4LogicalVolume* cuboDetectorConstruction::buildSquarePD(){
   G4double a, z, density;  
 
 // Silicon
@@ -516,6 +548,102 @@ G4LogicalVolume* cuboDetectorConstruction::buildPD(){
                                                     _Logic_Case, "PDCase", _Logic_Resin, false, 0, true);
   */
   G4PVPlacement* _Physical_Case = new G4PVPlacement(0, G4ThreeVector(0., _Case_Size_Y/2.-_Diode_Size_Y/2., 0),
+                                                      _Logic_Case, "PDCase", _Logic_Diode, false, 0, true);
+
+  return _Logic_Resin;
+
+
+}
+
+
+G4LogicalVolume* cuboDetectorConstruction::buildRoundPD(){
+  G4double a, z, density;
+
+// Silicon
+// 
+  G4Material * SiliconMaterial = new G4Material("SiliconMaterial", z=14,
+                                               a=28.09*g/mole,
+                                               density=2.329*g/cm3);
+
+// Optical Resin
+//
+  G4Material * ResinMaterial = new G4Material("ResinMaterial", z=6, a=12*g/mole,
+                                             density=1*g/cm3);
+
+// Ceramic
+//
+  G4Material * CeramicMaterial = new G4Material("CeramicMaterial", z=6, a=12*g/mole,
+                                             density=2*g/cm3);
+
+// Optical Properties
+//
+// Optical Resin
+//
+  G4double RefractiveIndex_Resin[9] =
+    { 1.55, 1.55, 1.55, 1.55, 1.55, 1.55, 1.55, 1.55, 1.55 };
+
+  G4MaterialPropertiesTable * resinMPT = new G4MaterialPropertiesTable();
+  resinMPT->AddProperty("RINDEX", PhotonEnergy, RefractiveIndex_Resin, 9);
+
+  ResinMaterial->SetMaterialPropertiesTable(resinMPT);
+
+//
+// Silicon
+//
+  G4double RefractiveIndex_Si[9] =
+    { 3.733, 3.783, 3.851, 3.947, 4.084, 4.297, 4.674, 5.57, 5.023 };
+
+  G4double Absorption_Si[9] =
+    {
+      7.0e-3*mm,
+      5.0e-3*mm,
+      4.0e-3*mm,
+      2.4e-3*mm,
+      1.5e-3*mm,
+      0.8e-3*mm,
+      0.3e-3*mm,
+      0.1e-3*mm,
+      0.08e-3*mm
+    };
+
+  G4MaterialPropertiesTable * SiMPT = new G4MaterialPropertiesTable();
+  SiMPT->AddProperty("ABSLENGTH", PhotonEnergy, Absorption_Si, 9);
+
+  SiliconMaterial->SetMaterialPropertiesTable(SiMPT);
+
+  G4EllipticalTube * _Solid_Resin = new G4EllipticalTube("Optical_Resin", _diameter/2.,
+                           _diameter/2., _Resin_Size_Y / 2.);
+
+  _Logic_Resin  = new G4LogicalVolume(_Solid_Resin,
+                                      ResinMaterial,
+                                      "Optical_Resin");
+
+// Photodiode case
+//
+  G4EllipticalTube * _Solid_Case = new G4EllipticalTube("Photodiode_case", _diameter/2.+5*mm, _diameter/2.+5*mm, 
+                          _Case_Size_Y / 2.);
+
+  G4LogicalVolume * _Logic_Case  = new G4LogicalVolume(_Solid_Case,
+                                     CeramicMaterial,
+                                     "Photodiode_case");
+
+  // The Photodiode
+  //
+  G4EllipticalTube * _Solid_Diode = new G4EllipticalTube("Photodiode", _diameter/2., _diameter/2.,
+                           _Diode_Size_Y / 2.);
+
+  G4LogicalVolume * _Logic_Diode  = new G4LogicalVolume(_Solid_Diode,
+                                      SiliconMaterial,
+                                      "Photodiode");
+  _Physical_Diode =
+    new G4PVPlacement(0, G4ThreeVector(0.,
+                                       0.,//(_Diode_Size_Y+_Resin_Size_Y) / 2.-0.01*mm,
+                                       (_Diode_Size_Y+_Resin_Size_Y) / 2.-0.01*mm
+                                       ),
+                      _Logic_Diode , "Photodiode", _Logic_Resin, false, 0);
+
+
+  G4PVPlacement* _Physical_Case = new G4PVPlacement(0, G4ThreeVector(0., 0., _Case_Size_Y/2.-_Diode_Size_Y/2.),
                                                       _Logic_Case, "PDCase", _Logic_Diode, false, 0, true);
 
   return _Logic_Resin;

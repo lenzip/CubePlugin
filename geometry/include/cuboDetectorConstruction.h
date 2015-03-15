@@ -20,6 +20,8 @@ class cuboDetectorConstruction : public GGSVGeometryConstruction
         ZPLUSSIDE,
         ZMINUSSIDE};
 
+  enum {SQUARE, ROUND};      
+
   public:
     cuboDetectorConstruction();
     virtual ~cuboDetectorConstruction();
@@ -29,7 +31,8 @@ class cuboDetectorConstruction : public GGSVGeometryConstruction
     G4VPhysicalVolume* GetVolume(){return _Physical_World;};
 
   private:
-    G4LogicalVolume* buildPD(); 
+    G4LogicalVolume* buildSquarePD(); 
+    G4LogicalVolume* buildRoundPD(); 
 
     G4VPhysicalVolume * _Physical_World;
     G4double _sizeX, _sizeY, _sizeZ;
@@ -44,6 +47,9 @@ class cuboDetectorConstruction : public GGSVGeometryConstruction
     G4double _Case_Size_X;
     G4double _Case_Size_Y;
     G4double _Case_Size_Z;
+    G4int    _nSensors;
+    G4double _diameter;
+    G4int    _squareOrRound;
 
     G4PVPlacement * _Physical_Diode ;
     G4PVPlacement * _Physical_Resin ;

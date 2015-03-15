@@ -6,7 +6,7 @@
 #include "G4EmExtraPhysics.hh"
 #include "G4DecayPhysics.hh"
 #include "G4HadronElasticPhysics.hh"
-#include "HadronPhysicsFTFP_BERT.hh"
+#include "G4HadronPhysicsFTFP_BERT.hh"
 #include "G4StoppingPhysics.hh"
 #include "G4IonPhysics.hh"
 #include "G4NeutronTrackingCut.hh"
@@ -43,7 +43,7 @@ GiulioOptical::GiulioOptical():G4VModularPhysicsList(){
   this->RegisterPhysics( new G4HadronElasticPhysics() );
 
    // Hadron Physics
-  this->RegisterPhysics(  new HadronPhysicsFTFP_BERT());
+  this->RegisterPhysics(  new G4HadronPhysicsFTFP_BERT());
 
   // Stopping Physics
   this->RegisterPhysics( new G4StoppingPhysics() );

@@ -12,6 +12,7 @@
 
 //#include "G4GenericMessenger.hh"
 #include "G4Event.hh"
+#include "G4SystemOfUnits.hh"
 
 RegisterUA(UAScoringExample);
 
