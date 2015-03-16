@@ -29,31 +29,25 @@ G4double* wavelenghToEnergy(const G4double* wavelenghts, G4int n){
   return energies;
 }
 
-G4double cuboDetectorConstruction::PhotonEnergy[9] =
-    { 1.65*eV, 1.77*eV, 1.91*eV, 2.07*eV, 2.25*eV, 2.48*eV, 2.76*eV, 3.10*eV,
-      3.87*eV };
-  //{  750*nm,  700*nm,  650*nm,  600*nm,  550*nm,  500*nm,  450*nm,  400*nm,
-  //   320*nm }
+G4double cuboDetectorConstruction::PhotonWavelengthAbsorption[15] = 
+{ 200*nm, 250*nm,  300*nm,   315*nm,   318.6*nm, 324.29*nm,  328.70*nm, 332.49*nm, 344.48*nm, 362.145*nm, 377.92*nm, 449.84*nm, 550.79*nm, 650.47*nm, 798.74*nm };
 
-G4double cuboDetectorConstruction::PhotonEnergy_2[12] =
-    { 1.65*eV, 1.77*eV, 1.91*eV, 2.07*eV, 2.25*eV, 2.48*eV, 2.76*eV, 3.10*eV,
-      3.54*eV, 3.87*eV, 4.13*eV, 4.28*eV};
-  //{  750*nm,  700*nm,  650*nm,  600*nm,  550*nm,  500*nm,  450*nm,  400*nm,
-  //   350*nm,  320*nm,  300*nm,  290*nm}
+G4double cuboDetectorConstruction::AbsorptionCoefficientCsI[15] = 
+{ 3.61/cm, 3.44/cm, 3.51/cm,  3.52/cm,  2.1610/cm, 0.7496/cm, 0.5212/cm, 0.46852/cm, 0.4333/cm, 0.4158/cm, 0.4041/cm, 0.3631/cm, 0.33968/cm, 0.3162/cm, 0.3045/cm };
 
-G4double cuboDetectorConstruction::RefractiveIndex_CsI[12] =
-    {   1.769,   1.773,   1.778,   1.785,   1.794,   1.806,   1.824,   1.850,
-        1.894,   1.937,   1.979,   2.006 };
+G4double cuboDetectorConstruction::PhotonWavelengthRIndexCsI[16] =
+{250*nm, 264*nm, 279.6*nm, 295.7*nm, 312.7*nm, 349.6*nm, 391*nm,  413.5*nm,  437.30*nm, 462.4*nm, 489*nm, 546.69*nm, 578.30*nm, 646.70*nm, 683*nm, 723*nm};
 
-G4double cuboDetectorConstruction::cuboDetectorConstruction::Absorption_CsI[9] =
-    { 250.*cm, 250.*cm, 250.*cm, 250.*cm, 250.*cm, 250.*cm, 250.*cm, 250.*cm,
-      0.*cm };
+G4double cuboDetectorConstruction::RIndexCsI[16] =
+{2.209,  2.110,  2.041,    1.990,    1.9510,   1.895,    1.857,   1.842,     1.8298,    1.8191,   1.8100,  1.7951,   1.7981,    1.779,     1.7751, 1.7715};
 
-G4double cuboDetectorConstruction::ScintilFast[9] =
-    { 0.00, 0.18, 0.39, 0.70, 1.0, 0.75, 0.28, 0.12, 0.00 };
 
-G4double cuboDetectorConstruction::RefractiveIndex_Air[9] =
-    { 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00 };
+G4double cuboDetectorConstruction::PhotonEnergyScintillationCsI[37] = 
+{1.3998*eV, 1.4298*eV, 1.4564*eV, 1.4963*eV, 1.5462*eV, 1.5860*eV, 1.6258*eV, 1.6821*eV, 1.7848*eV, 1.8775*eV, 1.9801*eV, 2.0199*eV, 2.0597*eV, 2.0929*eV, 2.1262*eV, 2.1628*eV, 2.1994*eV, 2.2395*eV, 2.2929*eV, 2.3564*eV, 2.4066*eV, 2.4735*eV, 2.5873*eV, 2.6842*eV, 2.7376*eV, 2.7677*eV, 2.8244*eV, 2.9210*eV, 2.9977*eV, 3.1342*eV, 3.2408*eV, 3.3541*eV, 3.4540*eV, 3.5606*eV, 3.6505*eV, 3.7670*eV, 3.9434*eV};
+
+
+G4double cuboDetectorConstruction::ScintiliationCsI[37] =
+{1.7604, 1.5740, 1.6272, 1.8402, 2.4527, 3.1183, 3.7840, 5.1420, 7.8846, 10.9201, 13.9290, 14.9142, 15.6065, 16.0325, 16.2722, 16.2456, 16.0592, 15.6331, 14.5680, 13.4231, 11.6923, 9.9349, 6.7929, 4.7160, 3.7840, 3.4645, 2.8521, 2.2396, 1.8935, 1.3343, 0.9349, 0.5089, 0.2426, 0.0828, 0.0562, 0.0828, 0.0562};
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -149,11 +143,20 @@ G4VPhysicalVolume* cuboDetectorConstruction::Construct()
 
   G4MaterialPropertiesTable * csiMPT = new G4MaterialPropertiesTable();
 
-  csiMPT->AddProperty("RINDEX", PhotonEnergy_2, RefractiveIndex_CsI, nEntries_2)
+  G4double* PhotonEnergyAbsorption = wavelenghToEnergy(PhotonWavelengthAbsorption, 15);
+  G4double  AbsorptionLength[15];
+  for (unsigned int i = 0; i < 15; ++i){
+    AbsorptionLength[i] = 1./AbsorptionCoefficientCsI[i];
+    G4cout << AbsorptionLength[i] << G4endl;
+  }
+
+  G4double * PhotonEnergyRIndex = wavelenghToEnergy(PhotonWavelengthRIndexCsI, 16);
+
+  csiMPT->AddProperty("RINDEX", PhotonEnergyRIndex, RIndexCsI, 16)
         ->SetSpline(true);
-  csiMPT->AddProperty("ABSLENGTH", PhotonEnergy, Absorption_CsI, nEntries)
+  csiMPT->AddProperty("ABSLENGTH", PhotonEnergyAbsorption, AbsorptionLength, 15)
         ->SetSpline(true);
-  csiMPT->AddProperty("FASTCOMPONENT",PhotonEnergy, ScintilFast, nEntries)
+  csiMPT->AddProperty("FASTCOMPONENT",PhotonEnergyScintillationCsI, ScintiliationCsI, 37)
         ->SetSpline(true);
 
   //csiMPT->AddConstProperty("SCINTILLATIONYIELD", 54000./MeV);
@@ -171,8 +174,10 @@ G4VPhysicalVolume* cuboDetectorConstruction::Construct()
 //
 // Air
 //
+  G4double EphotonAir[2] = {1.*eV, 5*eV};
+  G4double RindexAir[2] = {1., 1};
   G4MaterialPropertiesTable* airMPT = new G4MaterialPropertiesTable();
-  airMPT->AddProperty("RINDEX", PhotonEnergy, RefractiveIndex_Air, nEntries);
+  airMPT->AddProperty("RINDEX", EphotonAir, RindexAir, 2);
   
   Air->SetMaterialPropertiesTable(airMPT);
 
@@ -478,17 +483,20 @@ G4LogicalVolume* cuboDetectorConstruction::buildSquarePD(){
 //
 // Optical Resin
 //
-  G4double RefractiveIndex_Resin[9] =
-    { 1.55, 1.55, 1.55, 1.55, 1.55, 1.55, 1.55, 1.55, 1.55 };
+  
+  G4double ephoronResin[2] = {1.*eV, 4.*eV};
+  G4double RefractiveIndex_Resin[2] =
+    { 1.55, 1.55 };
 
   G4MaterialPropertiesTable * resinMPT = new G4MaterialPropertiesTable();
-  resinMPT->AddProperty("RINDEX", PhotonEnergy, RefractiveIndex_Resin, 9);
+  resinMPT->AddProperty("RINDEX", ephoronResin, RefractiveIndex_Resin, 2);
 
   ResinMaterial->SetMaterialPropertiesTable(resinMPT);
 
 //
 // Silicon
 //
+/*  
   G4double RefractiveIndex_Si[9] =
     { 3.733, 3.783, 3.851, 3.947, 4.084, 4.297, 4.674, 5.57, 5.023 };
 
@@ -504,13 +512,13 @@ G4LogicalVolume* cuboDetectorConstruction::buildSquarePD(){
       0.1e-3*mm,
       0.08e-3*mm
     };
-
+*/
   G4MaterialPropertiesTable * SiMPT = new G4MaterialPropertiesTable();
   //SiMPT->AddProperty("RINDEX", PhotonEnergy, RefractiveIndex_Si, 9)
   //     ->SetSpline(true);
-  SiMPT->AddProperty("ABSLENGTH", PhotonEnergy, Absorption_Si, 9);
+  //SiMPT->AddProperty("ABSLENGTH", PhotonEnergy, Absorption_Si, 9);
 
-  SiliconMaterial->SetMaterialPropertiesTable(SiMPT);
+  //SiliconMaterial->SetMaterialPropertiesTable(SiMPT);
 
   G4Box * _Solid_Resin = new G4Box("Optical_Resin", _Resin_Size_X / 2.,
                            _Resin_Size_Y / 2., _Resin_Size_Z / 2.);
@@ -579,14 +587,15 @@ G4LogicalVolume* cuboDetectorConstruction::buildRoundPD(){
 //
 // Optical Resin
 //
-  G4double RefractiveIndex_Resin[9] =
-    { 1.55, 1.55, 1.55, 1.55, 1.55, 1.55, 1.55, 1.55, 1.55 };
+  G4double ephotonResin[2] = {1*eV, 5*eV};
+  G4double RefractiveIndex_Resin[2] =
+    { 1.55, 1.55 };
 
   G4MaterialPropertiesTable * resinMPT = new G4MaterialPropertiesTable();
-  resinMPT->AddProperty("RINDEX", PhotonEnergy, RefractiveIndex_Resin, 9);
+  resinMPT->AddProperty("RINDEX", ephotonResin, RefractiveIndex_Resin, 2);
 
   ResinMaterial->SetMaterialPropertiesTable(resinMPT);
-
+/*
 //
 // Silicon
 //
@@ -610,7 +619,7 @@ G4LogicalVolume* cuboDetectorConstruction::buildRoundPD(){
   SiMPT->AddProperty("ABSLENGTH", PhotonEnergy, Absorption_Si, 9);
 
   SiliconMaterial->SetMaterialPropertiesTable(SiMPT);
-
+*/
   G4EllipticalTube * _Solid_Resin = new G4EllipticalTube("Optical_Resin", _diameter/2.,
                            _diameter/2., _Resin_Size_Y / 2.);
 

@@ -55,14 +55,14 @@ class cuboDetectorConstruction : public GGSVGeometryConstruction
     G4PVPlacement * _Physical_Resin ;
     G4LogicalVolume * _Logic_Resin;
 
-    static G4double PhotonEnergy[];
-    static G4double PhotonEnergy_2[];
+    static G4double PhotonWavelengthAbsorption[];
+    static G4double AbsorptionCoefficientCsI[];
 
-    static G4double RefractiveIndex_CsI[];
-    static G4double Absorption_CsI[];
+    static G4double PhotonWavelengthRIndexCsI[];
+    static G4double RIndexCsI[];
 
-    static G4double ScintilFast[];
-    static G4double RefractiveIndex_Air[];
+    static G4double PhotonEnergyScintillationCsI[];
+    static G4double ScintiliationCsI[];
 
     G4GenericMessenger* _messenger;
 };
