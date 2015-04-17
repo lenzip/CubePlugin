@@ -42,13 +42,17 @@ G4double cuboDetectorConstruction::RIndexCsI[16] =
 {2.209,  2.110,  2.041,    1.990,    1.9510,   1.895,    1.857,   1.842,     1.8298,    1.8191,   1.8100,  1.7951,   1.7981,    1.779,     1.7751, 1.7715};
 
 
-G4double cuboDetectorConstruction::PhotonEnergyScintillationCsI[37] = 
-{1.3998*eV, 1.4298*eV, 1.4564*eV, 1.4963*eV, 1.5462*eV, 1.5860*eV, 1.6258*eV, 1.6821*eV, 1.7848*eV, 1.8775*eV, 1.9801*eV, 2.0199*eV, 2.0597*eV, 2.0929*eV, 2.1262*eV, 2.1628*eV, 2.1994*eV, 2.2395*eV, 2.2929*eV, 2.3564*eV, 2.4066*eV, 2.4735*eV, 2.5873*eV, 2.6842*eV, 2.7376*eV, 2.7677*eV, 2.8244*eV, 2.9210*eV, 2.9977*eV, 3.1342*eV, 3.2408*eV, 3.3541*eV, 3.4540*eV, 3.5606*eV, 3.6505*eV, 3.7670*eV, 3.9434*eV};
+//G4double cuboDetectorConstruction::PhotonEnergyScintillationCsI[37] = 
+//{1.3998*eV, 1.4298*eV, 1.4564*eV, 1.4963*eV, 1.5462*eV, 1.5860*eV, 1.6258*eV, 1.6821*eV, 1.7848*eV, 1.8775*eV, 1.9801*eV, 2.0199*eV, 2.0597*eV, 2.0929*eV, 2.1262*eV, 2.1628*eV, 2.1994*eV, 2.2395*eV, 2.2929*eV, 2.3564*eV, 2.4066*eV, 2.4735*eV, 2.5873*eV, 2.6842*eV, 2.7376*eV, 2.7677*eV, 2.8244*eV, 2.9210*eV, 2.9977*eV, 3.1342*eV, 3.2408*eV, 3.3541*eV, 3.4540*eV, 3.5606*eV, 3.6505*eV, 3.7670*eV, 3.9434*eV};
+//scintilation is simulated between 314 nm 415 nm because after the UV filter kicks in. In this range we expect ~2000 photons/MeV
+G4double cuboDetectorConstruction::PhotonEnergyScintillationCsI[9] = 
+{2.9977*eV, 3.1342*eV, 3.2408*eV, 3.3541*eV, 3.4540*eV, 3.5606*eV, 3.6505*eV, 3.7670*eV, 3.9434*eV};
 
 
-G4double cuboDetectorConstruction::ScintiliationCsI[37] =
-{1.7604, 1.5740, 1.6272, 1.8402, 2.4527, 3.1183, 3.7840, 5.1420, 7.8846, 10.9201, 13.9290, 14.9142, 15.6065, 16.0325, 16.2722, 16.2456, 16.0592, 15.6331, 14.5680, 13.4231, 11.6923, 9.9349, 6.7929, 4.7160, 3.7840, 3.4645, 2.8521, 2.2396, 1.8935, 1.3343, 0.9349, 0.5089, 0.2426, 0.0828, 0.0562, 0.0828, 0.0562};
-
+//G4double cuboDetectorConstruction::ScintiliationCsI[37] =
+//{1.7604, 1.5740, 1.6272, 1.8402, 2.4527, 3.1183, 3.7840, 5.1420, 7.8846, 10.9201, 13.9290, 14.9142, 15.6065, 16.0325, 16.2722, 16.2456, 16.0592, 15.6331, 14.5680, 13.4231, 11.6923, 9.9349, 6.7929, 4.7160, 3.7840, 3.4645, 2.8521, 2.2396, 1.8935, 1.3343, 0.9349, 0.5089, 0.2426, 0.0828, 0.0562, 0.0828, 0.0562};
+G4double cuboDetectorConstruction::ScintiliationCsI[9] =
+{1.8935, 1.3343, 0.9349, 0.5089, 0.2426, 0.0828, 0.0562, 0.0828, 0.0562};
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 cuboDetectorConstruction::cuboDetectorConstruction():_Physical_World(0),
@@ -156,7 +160,7 @@ G4VPhysicalVolume* cuboDetectorConstruction::Construct()
         ->SetSpline(true);
   csiMPT->AddProperty("ABSLENGTH", PhotonEnergyAbsorption, AbsorptionLength, 15)
         ->SetSpline(true);
-  csiMPT->AddProperty("FASTCOMPONENT",PhotonEnergyScintillationCsI, ScintiliationCsI, 37)
+  csiMPT->AddProperty("FASTCOMPONENT",PhotonEnergyScintillationCsI, ScintiliationCsI, 9)
         ->SetSpline(true);
 
   //csiMPT->AddConstProperty("SCINTILLATIONYIELD", 54000./MeV);
