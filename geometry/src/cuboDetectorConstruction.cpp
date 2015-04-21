@@ -35,11 +35,11 @@ G4double cuboDetectorConstruction::PhotonWavelengthAbsorption[15] =
 G4double cuboDetectorConstruction::AbsorptionCoefficientCsI[15] = 
 { 3.61/cm, 3.44/cm, 3.51/cm,  3.52/cm,  2.1610/cm, 0.7496/cm, 0.5212/cm, 0.46852/cm, 0.4333/cm, 0.4158/cm, 0.4041/cm, 0.3631/cm, 0.33968/cm, 0.3162/cm, 0.3045/cm };
 
-G4double cuboDetectorConstruction::PhotonWavelengthRIndexCsI[16] =
-{250*nm, 264*nm, 279.6*nm, 295.7*nm, 312.7*nm, 349.6*nm, 391*nm,  413.5*nm,  437.30*nm, 462.4*nm, 489*nm, 546.69*nm, 578.30*nm, 646.70*nm, 683*nm, 723*nm};
-
-G4double cuboDetectorConstruction::RIndexCsI[16] =
-{2.209,  2.110,  2.041,    1.990,    1.9510,   1.895,    1.857,   1.842,     1.8298,    1.8191,   1.8100,  1.7951,   1.7981,    1.779,     1.7751, 1.7715};
+G4double cuboDetectorConstruction::PhotonWavelengthRIndexCsI[17] =
+{200*nm, 250*nm, 264*nm, 279.6*nm, 295.7*nm, 312.7*nm, 349.6*nm, 391*nm,  413.5*nm,  437.30*nm, 462.4*nm, 489*nm, 546.69*nm, 578.30*nm, 646.70*nm, 683*nm, 723*nm};
+//the point at 200 nm is not available, I put it equal to the one at 250 nm
+G4double cuboDetectorConstruction::RIndexCsI[17] =
+{2.2, 2.209,  2.110,  2.041,    1.990,    1.9510,   1.895,    1.857,   1.842,     1.8298,    1.8191,   1.8100,  1.7951,   1.7981,    1.779,     1.7751, 1.7715};
 
 
 //G4double cuboDetectorConstruction::PhotonEnergyScintillationCsI[37] = 
@@ -154,10 +154,11 @@ G4VPhysicalVolume* cuboDetectorConstruction::Construct()
     G4cout << AbsorptionLength[i] << G4endl;
   }
 
-  G4double * PhotonEnergyRIndex = wavelenghToEnergy(PhotonWavelengthRIndexCsI, 16);
+  G4double * PhotonEnergyRIndex = wavelenghToEnergy(PhotonWavelengthRIndexCsI, 17);
 
-  csiMPT->AddProperty("RINDEX", PhotonEnergyRIndex, RIndexCsI, 16)
+  csiMPT->AddProperty("RINDEX", PhotonEnergyRIndex, RIndexCsI, 17)
         ->SetSpline(true);
+
   csiMPT->AddProperty("ABSLENGTH", PhotonEnergyAbsorption, AbsorptionLength, 15)
         ->SetSpline(true);
   csiMPT->AddProperty("FASTCOMPONENT",PhotonEnergyScintillationCsI, ScintiliationCsI, 9)
